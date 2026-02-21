@@ -42,13 +42,26 @@ app.get('/api/health-check', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), name: 'GuruMitra API' });
 });
 
+// Serve frontend build if it exists (production / single-server mode)
+const frontendDist = path.join(__dirname, '..', '..', 'frontend', 'dist');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res) => {
+    if (!req.path.startsWith('/api') && !req.path.startsWith('/uploads')) {
+      res.sendFile(path.join(frontendDist, 'index.html'));
+    }
+  });
+}
+
 app.use(errorHandler);
 
 async function start() {
   await initDatabase();
   app.listen(PORT, () => {
-    console.log(`\n🎓 GuruMitra Backend running on http://localhost:${PORT}`);
-    console.log(`📋 API Health: http://localhost:${PORT}/api/health-check\n`);
+    console.log(`\n========================================`);
+    console.log(`  GuruMitra is running!`);
+    console.log(`  Open: http://localhost:${PORT}`);
+    console.log(`========================================\n`);
   });
 }
 
